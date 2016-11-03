@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Git introduction</title>
+
+		<meta name="description" content="A very basic introduction to Git.">
+		<meta name="author" content="Paul Mooore">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/theme/default.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+		<script>
+			if( window.location.search.match( /print-pdf/gi ) ) {
+				var link = document.createElement( 'link' );
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.href = 'css/print/pdf.css';
+				document.getElementsByTagName( 'head' )[0].appendChild( link );
+			}
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<div class="slides">
+
+				<!-- Git structure -->
+				<section>
+					<section>
+						<h2>Git's Strucutre</h2>
+						<img src="media/git-architecture.png">
+
+						<!-- Todo: turn this into a D3 force directed graph -->
+
+					</section>
+
+					<section>
+						<h2>Repository</h2>
+						<ul>
+							<li>
+								This is a container that stores the different versions of the <em>project</em>.
+							</li>
+
+							<li>
+								Different verions of the project are created by commits and identified by a commit id.
+							</li>
+
+							<li>
+								A commit id is a 160-bit SHA-1 hash which uniquely represents the post-commit state of the repository.
+
+								<!-- Todo:
+
+									 What does represents the new post-commit state actually mean 
+								-->
+							</li>
+
+							<li>
+								There is no difference between a remote and a local repository. 
+							</li>
+
+							<li>
+								A remote repository is just a copy of the repository that is accessed via a network.
+							</li>
+						</ul>
+					</section>
+
+					<!-- workspace -->
+					<section>
+						<h2>Workspace</h2>
+
+						<ul>
+							<li>
+								This is the working folder that contains a copy of the project file that you can work on.  
+							</li>
+
+							<li>
+								It contains a mix of tracked and untracked files.
+
+								<ul>
+									<li>
+										Tracked files are file that are already part of the repository or have been added to the index but not yet commited.
+									</li> 
+
+									<li>
+										Untracked files are just in the workspace.
+									</li>
+								</ul>
+							</li>
+
+							<li>
+								The repository is stored in this folder.  It is a hidden folder called .git.
+							</li>
+
+						</ul>
+
+					</section>
+
+					<!-- Index -->
+					<section>
+						<h2>Index</h2>
+						<ul>
+							<li>
+								This is a staging area used to collate the changes that you want to apply in your next commit.
+							</li>
+
+							<li>
+								Commits are from the index to the repository.
+							</li>
+
+							<li> This is also know as :
+								<ul>
+									<li>Cache</li>
+									<li>Directory cache</li>
+									<li>Current directory cache</li>
+									<li>Staging area</li>
+									<li>Staged files</li>
+								</ul>
+							</li>
+
+							<li>
+								Is a binary file (generally kept in .git/index) containing a sorted list of path names, permissions and blob object hash. 
+							</li>
+
+						</ul>
+
+					</section>
+					<section>
+						<h2>Demonstrate Index is the commit source</h2>
+						<pre>
+# Create a repository
+mkdir 1
+cd 1
+git init
+
+
+# Create a file and add it to the index
+echo "hello" > f1
+git add f1
+
+
+# Create a file but do not add it to the index
+echo "world" > f2
+git status
+
+
+# commit changes (only files in the index will be included)
+git commit -m "f1 commited but not f2"
+git ls-tree --name-only -r {commit id}
+
+
+
+# remove all files from the workspace and get them agains from the repository
+rm -rf *
+git checkout *
+ls
+						</pre>
+					</section>
+
+					<section>
+            			<h2>Set a workspace version of a file to its index version</h2>
+            			<pre>
+# Create a repository
+mkdir 1
+cd 1
+git init
+
+
+# Create a file and add it to the index 
+echo "r" > f1
+git add f1
+git commit -m "added f1 to repository"
+
+
+# Modify file and add it to the index
+echo "s" > f1
+git add f1
+git status
+
+
+# Modify the working copy of f1 
+echo "w" > f1
+git status
+
+
+#Recover the previously staged version of f1 ( contents 's') to the working folder
+cat f1
+checkout f1
+cat f1
+
+            			</pre>
+
+					</section>
+
+					<section>
+						<h2>Set a workspace and staged version of a file to its repository version</h2>
+						<pre>
+# Create a repository
+mkdir 1
+cd 1
+git init
+
+# Create a file and add it to the index 
+echo "r" > f1
+git add f1
+git commit -m "added f1 to repository"
+
+
+# Modify f1 in the workspace and add it to the index
+echo "s" > f1
+git add f1
+
+
+# Modify f1 in the workspace
+echo "w" > f1
+
+
+# Rest the index and workspace verion of f1 to its repository verions
+git status
+git checkout HEAD f1
+git status
+
+						</pre>
+					</section>
+
+					<section>
+						<h2>Remove an add without touching the working copy</h2>
+						<pre>
+# Create a repository
+mkdir 1
+cd 1
+git init
+
+# Create a file and add it to the index 
+echo "s" > f1
+git add f1
+
+# Remove the add from the index
+git reset f1
+git status
+
+						</pre>
+					</section>
+
+					<section>
+						<h2>View differences between versions of a file</h2>
+						<pre>
+# Create a repository
+mkdir 1
+cd 1
+git init
+
+
+# Create a file and add it to the repository
+echo "r" > f1
+git add f1
+git commit -m "Added f1 to the repository"
+
+
+# Modify the file and add change to the index
+echo "s" > f1
+git add f1
+
+
+# Modify the workspace copy of the file.
+echo "w" > f1
+
+
+# View the differences between the files
+
+git diff              # shows the difference between working and index
+git diff --cached     # shows the difference between index and the repository
+git diff HEAD         # shows the difference between working and the repository
+
+
+						</pre>
+						<p>
+							You can set up git to use file comparison tools.
+						</p>
+					</section>
+
+					<section>
+						<h2>Amend your previous commit</h2>
+						<pre>
+# create repository
+mkdir 1
+cd 1
+git init
+
+
+# Create a file and add it to the repository
+echo "a" > f1
+git add f1
+git commit -m "Initial commit of project"
+
+
+# view all the files included in the commit
+git log 
+git ls-tree --name-only -r {commit id}
+
+
+# Modify the commit
+echo "1" > f1
+git add f1
+echo "2" > f2
+git add f2
+git commit --amend
+
+
+
+# view the commit again  ( Note the commit id has changed but only one entry in the log )
+git log
+git ls-tree --name-only -r {commit id}
+
+						</pre>
+					</section>
+
+					<section>
+						<h2>Revert a previous commit</h2>
+						<pre>
+# create repository
+mkdir 1
+cd 1
+git init
+
+
+# Create files and add them to the repository
+echo "1" > f1
+echo "2" > f2
+git add f1 f2
+git commit -m "Initial commit"
+
+
+# Remove a file from the project
+rm f2
+git add f2
+git commit -m "Removed f2"
+
+
+# Revert the commit
+git log
+git revert {commit id}
+
+
+# To set the workspace back to a pre commit state without actually applying the revert
+git log
+git revert -n {commit id} # reset the workspace and index but does not commit
+
+						</pre>
+					</section>
+
+					<section>
+						<!-- Git ignore before any files have been commited -->
+						<h2>Prevent files from begin added to the repository</h2>
+						<pre>
+# Create repository
+mkdir 1
+cd 1
+git init
+
+
+# Create files and add a .tst to the index
+touch f1 f1.tst f2 f2.tst
+git add f1.tst
+git status
+
+
+# Create an ignore file
+echo "*.tst" > .gitignore
+git status                     # Notice that f1.tst is still in the index.
+
+
+# Clear f1.tst from the index
+git reset f1.tst
+git status
+
+						</pre>
+					</section>
+
+					<section>
+						<h2>clear files from repository that have been added to the ignore file</h2>
+						<pre>
+# Create repository
+mkdir 1
+cd 1
+git init
+
+
+# Create files and add a .tst to the repository
+touch f1 f1.tst f2 f2.tst
+git add f1.tst
+git commit -m "Add file that should be ignored to the repository"
+
+
+# Clear the file from the index and commit the change to the repository
+git rm --cached f1.tst
+git status
+git commit -m "Removed file that should be ignored but was added by accident"
+
+						</pre>
+
+
+					</section>
+
+				</section>
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
